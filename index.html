@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thought Translator</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    p.sub { font-size: 0.9rem; color: var(--text-muted); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: var(--text);
+      font-size: 1rem;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--accent); }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .controls select#contextSelect {
+      flex: 1 1 12rem;
+      min-width: 0;
+    }
+
+    .language-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .language-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .language-group input {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    select {
+      flex: 1;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    button:hover { background: var(--accent-hover); color: #fff; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .output-box {
+      min-height: 80px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .output-box.has-content { border-style: solid; }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      background: var(--border);
+      color: var(--text);
+    }
+    .copy-btn:hover { background: var(--accent); color: #000; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div>
+    <h1>Thought Translator</h1>
+    <p class="sub">Type whatever you’re thinking—the AI shapes it into something clear.</p>
+  </div>
+
+  <div class="card">
+    <textarea id="inputText" placeholder="Just dump it here… (e.g. 'want a button that glows on hover and then calls an api')"></textarea>
+
+    <div class="controls">
+      <select id="contextSelect">
+        <option value="text">📝 Text / paragraph</option>
+        <option value="poetry">🎭 Poetry &amp; lyrics</option>
+        <option value="programming" selected>💻 Programming</option>
+        <option value="templates">📋 Templates (docs, ISO, checklists)</option>
+        <option value="legal">⚖️ Legal &amp; lawyer</option>
+        <option value="graphics">🎨 Graphic design (print, web, UI)</option>
+        <option value="photo">📷 Photo generation (AI image prompt)</option>
+        <option value="studio">💡 Studio softbox / product shot</option>
+      </select>
+      <div class="language-group" role="radiogroup" aria-label="Output language">
+        <span>Output:</span>
+        <label><input type="radio" name="language" value="en" checked> EN</label>
+        <label><input type="radio" name="language" value="de"> DE</label>
+      </div>
+      <button id="submitBtn" onclick="transformText()">Rewrite</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">RESULT</span>
+    </div>
+    <div id="outputBox" class="output-box">
+      <span style="color:var(--text-muted)">Your result will appear here…</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const inputEl = document.getElementById('inputText');
+  const contextEl = document.getElementById('contextSelect');
+  function selectedLanguage() {
+    return document.querySelector('input[name="language"]:checked')?.value ?? 'en';
+  }
+  const outputEl = document.getElementById('outputBox');
+  const btnEl = document.getElementById('submitBtn');
+
+  // Shortcut: Ctrl/Cmd + Enter to submit
+  inputEl.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      transformText();
+    }
+  });
+
+  async function transformText() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    btnEl.disabled = true;
+    btnEl.textContent = 'Thinking…';
+    outputEl.innerHTML = '<span style="color:var(--text-muted)">Rewriting…</span>';
+
+    try {
+      const response = await fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: text,
+          context: contextEl.value,
+          language: selectedLanguage()
+        })
+      });
+
+      const raw = await response.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        outputEl.innerHTML = '<span style="color:#f87171">Invalid server response. Is PHP running? (run <code style="font-size:0.85em">php -S localhost:8000</code> in the project folder)</span>';
+        return;
+      }
+
+      if (!response.ok) {
+        outputEl.innerHTML = `<span style="color:#f87171">Error: ${data.error || 'Server error'}</span>`;
+      } else {
+        outputEl.classList.add('has-content');
+        outputEl.textContent = data.result;
+
+        // Add copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = 'Copy';
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(data.result);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+        };
+        outputEl.appendChild(copyBtn);
+      }
+    } catch (err) {
+      outputEl.innerHTML = '<span style="color:#f87171">Network error: don’t open the page via double-click—run <code style="font-size:0.85em">php -S localhost:8000</code> in the project folder and open http://localhost:8000.</span>';
+    } finally {
+      btnEl.disabled = false;
+      btnEl.textContent = 'Rewrite';
+    }
+  }
+</script>
+
+</body>
+</html>
