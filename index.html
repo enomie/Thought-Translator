@@ -142,6 +142,30 @@
       color: var(--text);
     }
     .copy-btn:hover { background: var(--accent); color: #000; }
+
+    .page-footer {
+      text-align: center;
+      margin-top: 0.25rem;
+      font-size: 0.72rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .page-footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .page-footer a:hover {
+      color: var(--accent);
+    }
+
+    .page-footer-model {
+      margin-top: 0.25rem;
+      font-size: 0.68rem;
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -183,6 +207,11 @@
       <span style="color:var(--text-muted)">Your result will appear here…</span>
     </div>
   </div>
+
+  <footer class="page-footer">
+    <a href="https://github.com/enomie/Thought-Translator" target="_blank" rel="noopener noreferrer">https://github.com/enomie/Thought-Translator.git</a>
+    <p class="page-footer-model">Model: openai/gpt-oss-120b (Groq)</p>
+  </footer>
 </div>
 
 <script>
