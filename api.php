@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-// Paste your Groq API key here (https://console.groq.com/keys):
+// Paste your FREE Groq API key here (https://console.groq.com/keys):
 $apiKey = 'gsk_YOUR_GROQ_API_KEY_HERE';
 
 $input = json_decode(file_get_contents('php://input'), true);
